@@ -86,13 +86,14 @@ public class Library {
         if(loanDAO.doesBookHaveActiveLoans(isbn)) throw new ActiveLoanExistsException("Impossivel deletar livro com emprestimos ativos");
         bookDAO.removeBook(isbn);
     }
-    public void registerLoan(String userCpf, String bookIsbn) throws SQLException, BookUnavailableException, LoanLimitExceededException, UserNotFoundException, BookNotFoundException {
+    public void registerLoan(String userCpf, String bookIsbn) throws SQLException, BookUnavailableException, LoanLimitExceededException, UserNotFoundException, BookNotFoundException, DuplicateLoanException {
         Book book = bookDAO.searchByISBN(bookIsbn);
         User user = userDAO.searchByCpf(userCpf);
         if (book == null) throw new BookNotFoundException("Nenhum livro encontrado para esse isbn");
         if (user == null) throw new UserNotFoundException("Nenhum usuário ativo encontrado para esse cpf");
         if(!book.isAvailable()) throw new BookUnavailableException("O livro não está disponivel para emprestismo");
-        if(loanDAO.countActiveLoansByUser(userCpf) >= Loan.LOAN_LIMIT) throw new LoanLimitExceededException("limite de emprestimo alcançado");
+        if(loanDAO.countActiveLoansByUser(userCpf) >= Loan.LOAN_LIMIT) throw new LoanLimitExceededException("limite de empréstimo alcançado");
+        if(loanDAO.doesUserHaveActiveLoanForBook(userCpf, bookIsbn)) throw new DuplicateLoanException("Usuário já tem um empréstimo ativo com esse livro");
 
         LocalDate today = LocalDate.now();
         Loan loan = new Loan(book, user, today);

@@ -93,6 +93,19 @@ public class LoanDAO {
         }
         return null;
     }
+    public boolean doesUserHaveActiveLoanForBook(String userCPF, String bookIsbn) throws SQLException {
+        String sql = "SELECT 1 FROM loans WHERE user_cpf = ? AND book_isbn = ? AND return_date IS NULL";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, userCPF);
+            stmt.setString(2, bookIsbn);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     public List<Loan> findAllActiveLoanByUser(String userCpf) throws SQLException {
         String sql = "SELECT * FROM loans WHERE user_cpf = ? AND return_date IS NULL";
         List<Loan> loans = new ArrayList<>();
